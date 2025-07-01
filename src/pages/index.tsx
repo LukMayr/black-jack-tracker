@@ -1,10 +1,17 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 import { useState } from "react";
+import RoomList from "~/components/RoomList";
+import { useRouter } from "next/router";
 
 export default function Home() {
   const { data: session } = useSession();
-  const { data: rooms, refetch } = api.room.getMyRooms.useQuery(undefined, {
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+
+const router = useRouter();
+
+  const { refetch } = api.room.getMyRooms.useQuery(undefined, {
     enabled: !!session,
   });
 
@@ -15,9 +22,6 @@ export default function Home() {
   const joinRoom = api.room.joinRoomByCode.useMutation({
     onSuccess: () => refetch(),
   });
-
-  const [name, setName] = useState("");
-  const [code, setCode] = useState("");
 
   if (!session) {
     return (
@@ -32,9 +36,14 @@ export default function Home() {
     );
   }
 
+  const handleRoomClick = (room: { id: string; name: string }) => {
+    router.push(`/rooms/${room.id}`);
+  };
+
   return (
     <main className="mx-auto max-w-xl p-6">
       <h1 className="mb-4 text-2xl font-bold">🃏 Blackjack Tracker</h1>
+
       <div className="mb-4">
         <input
           className="mr-2 rounded border p-2"
@@ -66,13 +75,8 @@ export default function Home() {
       </div>
 
       <h2 className="mt-6 mb-2 font-semibold">My Rooms</h2>
-      <ul className="rounded bg-gray-100 p-4">
-        {rooms?.map((room) => (
-          <li key={room.id} className="mb-2">
-            {room.name} — Invite Code: <code>{room.inviteCode}</code>
-          </li>
-        ))}
-      </ul>
+      <RoomList onRoomClick={handleRoomClick} />
+
 
       <button className="mt-6 text-red-500 underline" onClick={() => signOut()}>
         Sign out
