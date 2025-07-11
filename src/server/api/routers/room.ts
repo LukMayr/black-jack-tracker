@@ -32,16 +32,15 @@ export const roomRouter = createTRPCRouter({
   // Join a room using invite code, assign PLAYER role
   joinRoomByCode: protectedProcedure
     .input(z.object({ code: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      const room = await db.room.findUnique({
+    .mutation(async ({ ctx, input }) => {
+      const room = await ctx.db.room.findUnique({
         where: { inviteCode: input.code },
       });
-
-      if (!room) {
+      if (!room)
         throw new TRPCError({ code: "NOT_FOUND", message: "Room not found" });
-      }
 
-      const existing = await db.userRoom.findUnique({
+      // Check if already joined
+      const existing = await ctx.db.userRoom.findUnique({
         where: {
           userId_roomId: {
             userId: ctx.session.user.id,
@@ -54,10 +53,11 @@ export const roomRouter = createTRPCRouter({
         throw new TRPCError({ code: "CONFLICT", message: "Already joined" });
       }
 
-      await db.userRoom.create({
+      await ctx.db.userRoom.create({
         data: {
           userId: ctx.session.user.id,
           roomId: room.id,
+          // balance defaults to 2000 because of Prisma schema default
           role: "PLAYER",
         },
       });
@@ -98,7 +98,6 @@ export const roomRouter = createTRPCRouter({
               id: true,
               name: true,
               inviteCode: true,
-              // Add any other room fields needed here
             },
           },
           role: true,
@@ -112,10 +111,35 @@ export const roomRouter = createTRPCRouter({
         });
       }
 
+      const members = await ctx.db.userRoom.findMany({
+        where: { roomId: input.id },
+        select: {
+          user: { select: { id: true, name: true, email: true } },
+          balance: true,
+          role: true,
+        },
+        orderBy: [{ balance: "desc" }, { user: { name: "asc" } }],
+      });
+
       return {
         ...userRoom.room,
         role: userRoom.role,
+        ownerId: userRoom.role === "OWNER" ? ctx.session.user.id : undefined,
+        members,
       };
+    }),
+
+  startGameSession: protectedProcedure
+    .input(z.object({ roomId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // For now, just create a new game session with current date & roomId
+      const newSession = await ctx.db.gameSession.create({
+        data: {
+          roomId: input.roomId,
+          date: new Date(),
+        },
+      });
+      return newSession;
     }),
 
   // Kick a user from a room (OWNER only)
