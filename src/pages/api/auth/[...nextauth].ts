@@ -1,13 +1,15 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import EmailProvider from "next-auth/providers/email";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { compare } from "bcryptjs";
 import { db } from "~/server/db";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   secret: process.env.NEXTAUTH_SECRET,
   session: {
-    strategy: "database",
+    strategy: "jwt", // ✅ changed from "database"
   },
   providers: [
     EmailProvider({
@@ -21,23 +23,48 @@ export const authOptions: NextAuthOptions = {
       },
       from: process.env.EMAIL_FROM,
     }),
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      
+      async authorize(credentials) {
+        if (!credentials) {
+            throw new Error("Credentials are required");
+        }
+        const user = await db.user.findUnique({
+          where: { email: credentials?.email },
+        });
+
+        if (!user || !user.passwordHash) {
+          throw new Error("Invalid email or password");
+        }
+
+        const isValid = await compare(credentials.password, user.passwordHash);
+        if (!isValid) {
+          throw new Error("Invalid email or password");
+        }
+
+        return user;
+      },
+    }),
   ],
   callbacks: {
-    async session({ session }) {
-      if (!session.user?.email) return session;
-
-      const dbUser = await db.user.findUnique({
-        where: { email: session.user.email },
-      });
-
-      if (dbUser) {
-        session.user.id = dbUser.id;
+    async session({ session, token }) {
+      if (token?.sub) {
+        session.user.id = token.sub;
       }
-
       return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.sub = user.id;
+      }
+      return token;
     },
   },
 };
 
-// This makes authOptions usable in tRPC context
 export default NextAuth(authOptions);

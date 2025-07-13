@@ -27,6 +27,8 @@ model User {
   email         String       @unique
   name          String?
   emailVerified DateTime?
+  username      String?
+  passwordHash  String?
   entries       Entry[]
   userRooms     UserRoom[]
   accounts      Account[]

@@ -6,6 +6,7 @@ import { Geist } from "next/font/google";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
+import { useEffect } from "react";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -15,6 +16,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
+
   return (
     <SessionProvider session={session}>
       <div className={geist.className}>

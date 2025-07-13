@@ -51,7 +51,7 @@ export default function RoomDetail() {
             <div className="flex flex-col items-center justify-end">
               <div className="text-sm font-semibold text-gray-600">2nd</div>
               <div className=" w-40 rounded-b-lg text-center">
-                {podium[1].user.name ?? podium[1].user.email}
+                {podium[1].user.username ?? podium[1].user.email}
               </div>
               <div className="flex h-16 w-40 items-center justify-center rounded-t-lg bg-gray-300 text-lg font-bold">
                 {podium[1].balance}
@@ -63,7 +63,7 @@ export default function RoomDetail() {
             <div className="flex flex-col items-center justify-end">
               <div className="text-sm font-semibold text-yellow-500">1st</div>
               <div className="w-60 text-center">
-                {podium[0].user.name ?? podium[0].user.email}
+                {podium[0].user.username ?? podium[0].user.email}
               </div>
               <div className="flex h-20 w-60 items-center justify-center rounded-t-lg bg-yellow-400 text-xl font-bold">
                 {podium[0].balance}
@@ -75,7 +75,7 @@ export default function RoomDetail() {
             <div className="flex flex-col items-center justify-end">
               <div className="text-sm font-semibold text-amber-700">3rd</div>
               <div className="w-24 text-center">
-                {podium[2].user.name ?? podium[2].user.email}
+                {podium[2].user.username ?? podium[2].user.email}
               </div>
               <div className="text-md flex h-14 w-24 items-center justify-center rounded-t-lg bg-amber-700 font-bold">
                 {podium[2].balance}
@@ -94,7 +94,7 @@ export default function RoomDetail() {
             >
               <span className="mr-3">{index + 4}.</span>
               <span>
-                {member.user.name ?? member.user.email} — {member.balance}
+                {member.user.username ?? member.user.email} — {member.balance}
               </span>
               {ownerId === currentUserId && member.user.id !== ownerId && (
                 <button

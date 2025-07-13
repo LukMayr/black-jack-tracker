@@ -114,7 +114,7 @@ export const roomRouter = createTRPCRouter({
       const members = await ctx.db.userRoom.findMany({
         where: { roomId: input.id },
         select: {
-          user: { select: { id: true, name: true, email: true } },
+          user: { select: { id: true, name: true, username: true, email: true } },
           balance: true,
           role: true,
         },

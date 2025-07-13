@@ -1,15 +1,22 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import { api } from "~/utils/api";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import RoomList from "~/components/RoomList";
 import { useRouter } from "next/router";
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
 
-const router = useRouter();
+  const router = useRouter();
+
+  const { data: userData, isLoading } = api.user.getCurrentUser.useQuery(
+    undefined,
+    {
+      enabled: status === "authenticated",
+    },
+  );
 
   const { refetch } = api.room.getMyRooms.useQuery(undefined, {
     enabled: !!session,
@@ -22,6 +29,16 @@ const router = useRouter();
   const joinRoom = api.room.joinRoomByCode.useMutation({
     onSuccess: () => refetch(),
   });
+
+  useEffect(() => {
+    if (status === "loading" || isLoading) return;
+
+    if (status === "authenticated") {
+      if (!userData?.username) {
+        void router.push("/auth/username");
+      }
+    }
+  }, [status, isLoading, userData, router]);
 
   if (!session) {
     return (
