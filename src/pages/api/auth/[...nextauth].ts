@@ -23,6 +23,7 @@ export const authOptions: NextAuthOptions = {
       },
       from: process.env.EMAIL_FROM,
     }),
+    /*
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -49,7 +50,7 @@ export const authOptions: NextAuthOptions = {
 
         return user;
       },
-    }),
+    }),*/
   ],
   callbacks: {
     async session({ session, token }) {

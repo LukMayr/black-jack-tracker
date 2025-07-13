@@ -1,4 +1,4 @@
-// /pages/api/auth/register.ts
+/*// /pages/api/auth/register.ts
 import type { NextApiRequest } from "next";
 import type { NextApiResponse } from "next";
 import { hash } from "bcryptjs";
@@ -38,3 +38,4 @@ export default async function handler(
 
   return res.status(201).json({ message: "User created", userId: user.id });
 }
+*/
