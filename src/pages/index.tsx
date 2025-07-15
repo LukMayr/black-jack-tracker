@@ -1,6 +1,6 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import { api } from "~/utils/api";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import RoomList from "~/components/RoomList";
 import { useRouter } from "next/router";
 
@@ -54,7 +54,7 @@ export default function Home() {
   }
 
   const handleRoomClick = (room: { id: string; name: string }) => {
-    router.push(`/rooms/${room.id}`);
+    void router.push(`/rooms/${room.id}`);
   };
 
   return (

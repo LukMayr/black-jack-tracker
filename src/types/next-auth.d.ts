@@ -1,4 +1,5 @@
 // types/next-auth.d.ts
+// eslint-disable-next-line
 import NextAuth from "next-auth";
 
 declare module "next-auth" {

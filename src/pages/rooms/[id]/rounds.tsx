@@ -28,7 +28,7 @@ export default function GameSessionPage() {
   const startGameMutation = api.room.startGameSession.useMutation({
     onSuccess: (data) => {
         setGameSessionId(data.id);
-      refetch();
+      void refetch();
     },
   });
 

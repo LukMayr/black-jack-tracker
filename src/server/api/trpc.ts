@@ -12,10 +12,9 @@ import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { getServerSession, type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
-import { authOptions } from "~/pages/api/auth/[...nextauth]";
+import { authOptions } from "~/lib/auth";
 
 
-import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 
 /**
@@ -57,8 +56,12 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts;
 
   // Get the session from the server using the getServerSession wrapper function
-  const session = await getServerSession(req, res, authOptions) as Session | null;
-
+  // eslint-disable-next-line
+  const session = (await getServerSession(
+    req,
+    res,
+    authOptions,
+  )) as Session | null;
   return createInnerTRPCContext({
     session,
   });

@@ -6,7 +6,6 @@ import { Geist } from "next/font/google";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
-import { useEffect } from "react";
 
 const geist = Geist({
   subsets: ["latin"],

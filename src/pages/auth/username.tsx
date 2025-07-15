@@ -1,11 +1,9 @@
 // pages/auth/username.tsx
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 import { useState } from "react";
 
 export default function UsernamePage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
