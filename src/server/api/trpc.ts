@@ -12,7 +12,8 @@ import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { getServerSession, type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
-import { authOptions } from "~/lib/auth";
+import { authOptions } from "~/pages/api/auth/[...nextauth]";
+
 
 
 import { db } from "~/server/db";
