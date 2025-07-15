@@ -17,7 +17,6 @@ export default function GameSessionPage() {
 
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);
 
-
   const {
     data: room,
     isLoading,
@@ -27,7 +26,7 @@ export default function GameSessionPage() {
 
   const startGameMutation = api.room.startGameSession.useMutation({
     onSuccess: (data) => {
-        setGameSessionId(data.id);
+      setGameSessionId(data.id);
       void refetch();
     },
   });
@@ -82,16 +81,16 @@ export default function GameSessionPage() {
   };
 
   const handleSplit = (userId: string) => {
-    setRoundData((prev) => {
-      const currentBet = prev[userId]?.bet ?? 0;
-      return {
-        ...prev,
-        [userId]: {
-          ...prev[userId],
-          bet: currentBet * 2,
-        },
-      };
-    });
+    const splitId = `${userId}_split`;
+    const currentBet = roundData[userId]?.bet ?? 0;
+
+    setRoundData((prev) => ({
+      ...prev,
+      [splitId]: {
+        bet: currentBet,
+        result: undefined,
+      },
+    }));
   };
 
   const handleSubmit = () => {
@@ -100,9 +99,12 @@ export default function GameSessionPage() {
         ([_, data]) => data.bet !== undefined && data.result !== undefined,
       )
       .map(([userId, data]) => ({
-        userId,
+        userId: userId.replace("_split", ""),
         amount: data.bet ?? 0,
-        result: (data.result ?? "DRAW").toUpperCase() as "WIN" | "LOSS" | "DRAW",
+        result: (data.result ?? "DRAW").toUpperCase() as
+          | "WIN"
+          | "LOSS"
+          | "DRAW",
       }));
 
     if (entries.length === 0) {
@@ -116,20 +118,43 @@ export default function GameSessionPage() {
     });
   };
 
+  // Merge members with any split users from roundData
+  const displayUsers = [...members];
+
+  Object.keys(roundData).forEach((key) => {
+    if (
+      key.endsWith("_split") &&
+      !displayUsers.some((m) => m.user.id === key)
+    ) {
+      const originalId = key.replace("_split", "");
+      const originalUser = members.find((m) => m.user.id === originalId);
+      if (originalUser) {
+        displayUsers.push({
+          ...originalUser,
+          user: {
+            ...originalUser.user,
+            id: key,
+          },
+        });
+      }
+    }
+  });
+
   return (
     <div className="mx-auto max-w-3xl p-6">
       <h1 className="mb-6 text-2xl font-bold">Game Session</h1>
 
       <ol className="space-y-4">
-        {members.map((member) => {
+        {displayUsers.map((member) => {
           const userId = member.user.id;
           const data = roundData[userId] ?? {};
+          const isSplit = userId.endsWith("_split");
 
           return (
             <li key={userId} className="rounded border p-4 shadow-sm">
               <div className="mb-2 font-semibold">
-                {member.user.name ?? member.user.email} — Balance:{" "}
-                {member.balance}
+                {member.user.name ?? member.user.email}
+                {isSplit && " (Split)"} — Balance: {member.balance}
               </div>
 
               {ownerId === currentUserId ? (
@@ -145,18 +170,22 @@ export default function GameSessionPage() {
                       }
                       min={0}
                     />
-                    <button
-                      className="rounded bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
-                      onClick={() => handleDouble(userId)}
-                    >
-                      Double
-                    </button>
-                    <button
-                      className="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
-                      onClick={() => handleSplit(userId)}
-                    >
-                      Split
-                    </button>
+                    
+                      <>
+                        <button
+                          className="rounded bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
+                          onClick={() => handleDouble(userId)}
+                        >
+                          Double
+                        </button>
+                        <button
+                          className="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+                          onClick={() => handleSplit(userId)}
+                        >
+                          Split
+                        </button>
+                      </>
+                    
                   </div>
 
                   <div className="flex items-center gap-2">
